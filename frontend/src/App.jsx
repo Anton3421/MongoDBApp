@@ -1,48 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, createUser, updateUser, deleteUser } from './api';
+import { getUsers, createUser, updateUser, deleteUser, getAverageAge } from './api';
 import './App.css';
 
 function App() {
-// State variables
+  // State variables
   const [users, setUsers] = useState([]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [age, setAge] = useState('');
   const [editId, setEditId] = useState(null);
+  const [averageAge, setAverageAge] = useState(null);
 
-// Fetches the users from API when component mounts
+  // Fetches the users and average age from API when component mounts
   useEffect(() => {
     fetchUsers();
   }, []);
 
-// Asynchronous request to the getUsers function from api.js
   const fetchUsers = async () => {
     const response = await getUsers();
     setUsers(response.data);
+    fetchAverageAge();
   };
 
-// Called when the form is submitted
-// Creates a user object with form input values
+  // Fetch average age from API
+  const fetchAverageAge = async () => {
+    try {
+      const result = await getAverageAge();
+      setAverageAge(result[0]?.averageAge ?? null);
+    } catch (error) {
+      console.error('Error fetching average age:', error);
+    }
+  };
+
+  // Called when the form is submitted
   const handleSubmit = async (e) => {
     e.preventDefault();
     const user = { name, email, age: Number(age) };
-// If objects editId-value is true, updateUser from api.js is called
     if (editId) {
       await updateUser(editId, user);
       setEditId(null);
     } else {
-// Otherwise, call createUser from api.js
       await createUser(user);
     }
     setName('');
     setEmail('');
     setAge('');
-// Call fetchUsers to refresh the user list
-    fetchUsers();
+    fetchUsers();  // Refresh the user list and average age
   };
 
-// Defines objects editId (true/false)
-// Updates state-variables with the corresponding values from the clicked user object
   const handleEdit = (user) => {
     setEditId(user._id);
     setName(user.name);
@@ -50,11 +55,9 @@ function App() {
     setAge(user.age);
   };
 
-// Calls deleteUser from api.js
-// After calling, call fetchUsers to refresh users list
   const handleDelete = async (id) => {
     await deleteUser(id);
-    fetchUsers();
+    fetchUsers();  // Refresh the user list and average age
   };
 
   return (
@@ -93,6 +96,7 @@ function App() {
           </li>
         ))}
       </ul>
+      <h2>Average Age: {averageAge != null ? averageAge.toFixed(2) : 'N/A'}</h2>
     </div>
   );
 }

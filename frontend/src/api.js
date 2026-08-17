@@ -18,3 +18,13 @@ export const updateUser = async (id, user) => {
 export const deleteUser = async (id) => {
   return await axios.delete(`${API_URL}/${id}`);
 };
+
+export const getAverageAge = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/average-age`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching average age:', error);
+    throw error;
+  }
+};
