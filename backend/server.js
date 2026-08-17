@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema({
   email: String,
   age: Number,
 });
+
+userSchema.index({age: 1});
+
 const User = mongoose.model('User', userSchema);
 
 // Aggregation endpoint to get the average age
@@ -89,6 +92,15 @@ app.delete('/users/:id', async (req, res) => {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).send();
     res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+app.get('/users/age/:age', async (req, res) => {
+  try {
+    const users = await User.find({ age: { $gt: req.params.age } });
+    res.status(200).send(users);
   } catch (error) {
     res.status(500).send(error);
   }
